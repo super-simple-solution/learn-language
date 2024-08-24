@@ -178,17 +178,16 @@ export default function ChatBottombar({
             placeholder="Aa"
             className=" w-full border rounded-full flex items-center h-9 resize-none overflow-hidden bg-background"
           ></Textarea>
-          <div className="absolute right-2 bottom-0.5  ">
+          {/* <div className="absolute right-2 bottom-0.5  ">
             <EmojiPicker onChange={(value) => {
               setMessage(message + value)
               if (inputRef.current) {
                 inputRef.current.focus();
               }
             }} />
-          </div>
+          </div> */}
         </motion.div>
 
-        {message.trim() ? (
           <Link
             href="#"
             className={cn(
@@ -200,19 +199,6 @@ export default function ChatBottombar({
           >
             <SendHorizontal size={20} className="text-muted-foreground" />
           </Link>
-        ) : (
-          <Link
-            href="#"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "icon" }),
-              "h-9 w-9",
-              "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white shrink-0"
-            )}
-            onClick={handleThumbsUp}
-          >
-            <ThumbsUp size={20} className="text-muted-foreground" />
-          </Link>
-        )}
       </AnimatePresence>
     </div>
   );

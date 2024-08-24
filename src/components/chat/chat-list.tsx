@@ -69,7 +69,13 @@ export function ChatList({
                     />
                   </Avatar>
                 )}
-                <span className=" bg-accent p-3 rounded-md max-w-xs">
+                <span className={
+                  cn(
+                    "bg-accent p-3 rounded-md max-w-xs",
+                    message.name === selectedUser.name
+                     ? "bg-slate-100"
+                      : "bg-green-300")
+                }>
                   {message.message}
                 </span>
                 {message.name !== selectedUser.name && (
