@@ -4,8 +4,6 @@ import {
   Paperclip,
   PlusCircle,
   SendHorizontal,
-  Smile,
-  ThumbsUp,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -14,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Message, loggedInUserData } from "@/app/data";
 import { Textarea } from "../ui/textarea";
-import { EmojiPicker } from "../emoji-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface ChatBottombarProps {
@@ -34,15 +31,15 @@ export default function ChatBottombar({
     setMessage(event.target.value);
   };
 
-  const handleThumbsUp = () => {
-    const newMessage: Message = {
-      id: message.length + 1,
-      name: loggedInUserData.name,
-      avatar: loggedInUserData.avatar,
-      message: "👍",
-    };
-    sendMessage(newMessage);
-    setMessage("");
+  const handleMic = () => {
+    // const newMessage: Message = {
+    //   id: message.length + 1,
+    //   name: loggedInUserData.name,
+    //   avatar: loggedInUserData.avatar,
+    //   message: "12331231",
+    // };
+    // sendMessage(newMessage);
+    // setMessage("");
   };
 
   const handleSend = () => {
@@ -178,14 +175,19 @@ export default function ChatBottombar({
             placeholder="Aa"
             className=" w-full border rounded-full flex items-center h-9 resize-none overflow-hidden bg-background"
           ></Textarea>
-          {/* <div className="absolute right-2 bottom-0.5  ">
-            <EmojiPicker onChange={(value) => {
-              setMessage(message + value)
-              if (inputRef.current) {
-                inputRef.current.focus();
-              }
-            }} />
-          </div> */}
+          <div className="absolute right-2 bottom-0.5  ">
+          <Link
+            href="#"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "h-9 w-9",
+              "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white shrink-0"
+            )}
+            onClick={handleMic}
+          >
+            <Mic size={20} className="text-muted-foreground" />
+          </Link>
+          </div>
         </motion.div>
 
           <Link
