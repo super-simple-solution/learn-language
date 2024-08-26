@@ -7,7 +7,8 @@ import {
 import Link from "next/link";
 import React, { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Message, loggedInUserData } from "@/app/data";
+import { Message } from "@/app/data";
+import { useWhisper } from '@chengsokdara/use-whisper'
 
 interface ChatBottombarProps {
   sendMessage: (newMessage: Message) => void;
@@ -22,11 +23,24 @@ export default function ChatBottombar({
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(event.target.value);
-  };
+
+  const {
+    recording,
+    speaking,
+    transcribing,
+    transcript,
+    pauseRecording,
+    startRecording,
+    stopRecording,
+  } = useWhisper({
+    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN
+    whisperConfig: {
+      language: 'en',
+    },
+  })
 
   const handleMic = () => {
+    startRecording()
     // const newMessage: Message = {
     //   id: message.length + 1,
     //   name: loggedInUserData.name,
@@ -36,39 +50,11 @@ export default function ChatBottombar({
     // sendMessage(newMessage);
     // setMessage("");
   };
-
-  const handleSend = () => {
-    if (message.trim()) {
-      const newMessage: Message = {
-        id: message.length + 1,
-        name: loggedInUserData.name,
-        avatar: loggedInUserData.avatar,
-        message: message.trim(),
-      };     
-      sendMessage(newMessage);
-      setMessage("");
-
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }
-  };
-
   const handleCancle = () => {}
-  const handleFinish = () => {}
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSend();
-    }
-
-    if (event.key === "Enter" && event.shiftKey) {
-      event.preventDefault();
-      setMessage((prev) => prev + "\n");
-    }
-  };
-
+  const handleFinish = () => {
+    console.log(speaking, 36346436)
+  }
+  
   return (
     <div className="p-2 flex justify-between w-full items-center">
       <Link
