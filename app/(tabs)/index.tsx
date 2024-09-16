@@ -1,102 +1,225 @@
-import { View, Pressable } from "react-native"
-import { useScrollToTop } from "@react-navigation/native"
-import { FlashList } from "@shopify/flash-list"
-import { eq } from "drizzle-orm"
-import { Link, Stack } from "expo-router"
-import * as React from "react"
-import { useLiveQuery } from "drizzle-orm/expo-sqlite"
+import React, { useEffect, useState } from 'react'
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TouchableHighlight,
+} from 'react-native'
+import {
+  Audio,
+  InterruptionModeAndroid,
+  InterruptionModeIOS
+} from 'expo-av'
 
-import { Text } from "@/components/ui/text"
-import { habitTable } from "@/db/schema"
-import { Plus } from "@/components/Icons"
-import { useMigrationHelper } from "@/db/drizzle"
-import { useDatabase } from "@/db/provider"
-import { HabitCard } from "@/components/habit"
-import type { Habit } from "@/lib/storage"
+import { Mic, Loader } from 'lucide-react-native'
 
-export default function Home() {
-  const { success, error } = useMigrationHelper()
+import Voice, {
+  SpeechRecognizedEvent,
+  SpeechResultsEvent,
+  SpeechErrorEvent,
+} from '@react-native-voice/voice'
 
-  if (error) {
-    return (
-      <View className="flex-1 gap-5 p-6 bg-secondary/30">
-        <Text>Migration error: {error.message}</Text>
-      </View>
-    )
-  }
-  if (!success) {
-    return (
-      <View className="flex-1 gap-5 p-6 bg-secondary/30">
-        <Text>Migration is in progress...</Text>
-      </View>
-    )
-  }
-
-  return <ScreenContent />
+enum Status {
+  IDLE = 0,
+  STARTED,
+  PROCESSING,
+  ENDED
 }
 
-function ScreenContent() {
-  const { db } = useDatabase()
-  const { data: habits, error } = useLiveQuery(
-    db?.select().from(habitTable).where(eq(habitTable.archived, false)),
-  )
+const audioConfig = {
+  shouldCorrectPitch: true,
+  volume: 1.0,
+  rate: 1.0,
+}
 
-  const ref = React.useRef(null)
-  useScrollToTop(ref)
+export default function Index() {
+  const [status, setStatus] = useState(Status.IDLE)
+  const [results, setResults] = useState<string[]>([''])
 
-  const renderItem = React.useCallback(
-    ({ item }: { item: Habit }) => <HabitCard {...item} />,
-    [],
-  )
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [sound, setSound] = useState<Audio.Sound | null>(null)
 
-  if (error) {
-    return (
-      <View className="flex-1 items-center justify-center bg-secondary/30">
-        <Text className="text-destructive pb-2 ">Error Loading data</Text>
-      </View>
-    )
+  Voice.onSpeechStart = onSpeechStart
+  Voice.onSpeechEnd = onSpeechEnd
+  Voice.onSpeechError = onSpeechError
+  Voice.onSpeechResults = onSpeechResults
+
+  useEffect(() => {
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners)
+    }
+  }, [])
+
+  useEffect(() => {
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      staysActiveInBackground: false,
+      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+      playThroughEarpieceAndroid: false
+    })
+  })
+
+  useEffect(() => {
+    return sound
+      ? () => {
+        console.log("Unloading Sound")
+        setIsPlaying(false)
+        sound.unloadAsync()
+        setSound(null)
+      }
+      : undefined
+  }, [sound])
+
+  async function playSound() {
+    const time = Date.now()
+    console.log('Loading Sound', time)
+    const { sound } = await Audio.Sound.createAsync({
+      uri: 'https://speechstudioprodpublicsa.blob.core.windows.net/ttsvoice/Masterpieces/en-US-Ava-Conversation_with_interjections-Audio.wav'
+      // uri: 'https://lv-sycdn.kuwo.cn/33097b9f5beff5ff711fedd880deb694/66dfc7b1/resource/30106/trackmedia/M800001DZgUf2NfnXZ.mp3'
+    }, { ...audioConfig })
+    setSound(sound)
+
+    console.log('Playing Sound', Date.now() - time)
+    sound.playAsync().then((res) => {
+      console.log(res, 'play end', Date.now() - time)
+    })
+    console.log('End Sound')
   }
+
+  function reset() {
+    setResults([''])
+    setStatus(Status.IDLE)
+  }
+
+  function onSpeechStart() {
+    console.log('onSpeechStart: ')
+    setStatus(Status.STARTED)
+  }
+
+  function onSpeechEnd() {
+    console.log('onSpeechEnd: ')
+    setStatus(Status.ENDED)
+  }
+
+  function onSpeechError(e: SpeechErrorEvent) {
+    console.log('onSpeechError: ', e)
+    setStatus(Status.IDLE)
+  }
+
+  function onSpeechRecognized(e: SpeechRecognizedEvent) {
+    console.log('SpeechRecognizedEvent: ', e)
+    setStatus(Status.PROCESSING)
+  }
+
+  function onSpeechResults(e: SpeechResultsEvent) {
+    if (!e.value) return
+    console.log('onSpeechResults: ', e.value)
+    setResults(e.value)
+  }
+
+  const _startRecognizing = async () => {
+    if (!Voice.isAvailable() || status !== Status.IDLE) return
+    reset()
+
+    try {
+      await Voice.start('en-US')
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const _stopRecognizing = async () => {
+    try {
+      await Voice.stop()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const _cancelRecognizing = async () => {
+    try {
+      await Voice.cancel()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const _destroyRecognizer = async () => {
+    try {
+      await Voice.destroy()
+    } catch (e) {
+      console.error(e)
+    }
+    reset()
+  }
+
   return (
-    <View className="flex flex-col basis-full bg-background  p-8">
-      <Stack.Screen
-        options={{
-          title: "Habits",
-        }}
-      />
-      <FlashList
-        ref={ref}
-        className="native:overflow-hidden rounded-t-lg"
-        estimatedItemSize={49}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => (
-          <View>
-            <Text className="text-lg">Hi There 👋</Text>
-            <Text className="text-sm">
-              This example use sql.js on Web and expo/sqlite on native
-            </Text>
-            <Text className="text-sm">
-              If you change the schema, you need to run{" "}
-              <Text className="text-sm font-mono text-muted-foreground bg-muted">
-                bun migrate
-              </Text>
-            </Text>
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View className="p-2" />}
-        data={habits}
-        renderItem={renderItem}
-        keyExtractor={(_, index) => `item-${index}`}
-        ListFooterComponent={<View className="py-4" />}
-      />
-      <View className="absolute web:bottom-20 bottom-10 right-8">
-        <Link href="/create" asChild>
-          <Pressable>
-            <View className="bg-primary justify-center rounded-full h-[45px] w-[45px]">
-              <Plus className="text-background self-center" />
-            </View>
-          </Pressable>
-        </Link>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.welcome}>Welcome to React Native Voice!</Text>
+      <Text style={styles.instructions}>
+        Press the button and start speaking.
+      </Text>
+      <Text style={styles.stat}>{`Status: ${status}`}</Text>
+      <Text style={styles.stat}>Results:</Text>
+      {results.map((result, index) => {
+        return (
+          <Text key={`result-${index}`} style={styles.stat}>
+            {result}
+          </Text>
+        )
+      })}
+      <TouchableHighlight onPress={_startRecognizing}>
+        {
+          status === Status.IDLE ? <Mic fill="red" /> : <Loader fill="red" />
+        }
+      </TouchableHighlight>
+      <Button title="Play" onPress={playSound} />
+      <TouchableHighlight onPress={_stopRecognizing}>
+        <Text style={styles.action}>Stop Recognizing</Text>
+      </TouchableHighlight>
+      <TouchableHighlight onPress={_cancelRecognizing}>
+        <Text style={styles.action}>Cancel</Text>
+      </TouchableHighlight>
+      <TouchableHighlight onPress={_destroyRecognizer}>
+        <Text style={styles.action}>Destroy</Text>
+      </TouchableHighlight>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  button: {
+    width: 50,
+    height: 50,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+  },
+  action: {
+    textAlign: 'center',
+    color: '#0000FF',
+    marginVertical: 5,
+    fontWeight: 'bold',
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  stat: {
+    textAlign: 'center',
+    color: '#B0171F',
+    marginBottom: 1,
+  },
+})

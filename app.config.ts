@@ -18,9 +18,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     backgroundColor: "#ffffff",
   },
   assetBundlePatterns: ["**/*"],
+  plugins: ["@react-native-voice/voice", ["expo-router"], ["expo-av",]],
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.expostarter.base",
+    infoPlist: {
+      UIBackgroundModes: [
+          "audio"
+      ],
+      NSMicrophoneUsageDescription: "This app uses the Microphone to record your voice.",
+      NSSpeechRecognitionUsageDescription: "This app uses SpeechRecognition to generate text from your voice.",
+    }
   },
   android: {
     adaptiveIcon: {
@@ -28,13 +36,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#ffffff",
     },
     package: "com.expostarter.base",
+    permissions: ["android.permission.RECORD_AUDIO"]
   },
   web: {
     bundler: "metro",
     output: "single",
     favicon: "./assets/images/favicon.png",
   },
-  plugins: [["expo-router"]],
   experiments: {
     typedRoutes: true,
     baseUrl: "/expo-template",
