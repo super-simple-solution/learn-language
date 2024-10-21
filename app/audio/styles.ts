@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native'
 
 export const styles = StyleSheet.create({
   bubble: {
-    backgroundColor: '#ececec',
+    backgroundColor: '#fff',
     width: '100%',
     paddingHorizontal: 20,
   },
@@ -13,9 +13,12 @@ export const styles = StyleSheet.create({
   },
   userContainer: {
     backgroundColor: '#d9f99d',
+    marginLeft: 10,
+    // marginBottom: 20,
   },
   systemContainer: {
-    backgroundColor: '#fff' ,
+    backgroundColor: '#ececec' ,
+    marginTop: 20,
   },
   mainMessage: {
     marginBottom: 10,

@@ -22,4 +22,17 @@ export const chatList:IMessage[] = [{
     ],
   },
   user: { _id: 1, name: 'System' },
+}, {
+  _id: 3,
+  system: false,
+  text: 'Yum, peaches are delicious! Do you like to eat fruits every day? Do you like to eat fruits every day? Do you like to eat fruits every day?',
+  createdAt: new Date(),
+  quickReplies: {
+    type: 'radio',
+    keepIt: true,
+    values: [
+      { title: '📷 Yes, let me show you with a picture picture  picture picture! let me show you with a picture picture  picture picture!', value: 'yes_picture' },
+    ],
+  },
+  user: { _id: 1, name: 'System' },
 }]

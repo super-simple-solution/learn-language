@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native'
-import { Languages, Star, Volume2, AudioLines, Play, GraduationCap, Lightbulb, MessageSquareDiff, Loader, SparkleIcon, ChevronDown, ChevronUp, Eye } from 'lucide-react-native'
+import { Languages, Star, Volume2, AudioLines, Play, GraduationCap, Lightbulb, MessageSquareDiff, Loader, SparkleIcon, ChevronDown, ChevronUp, Eye, Check, ChevronRight } from 'lucide-react-native'
 import { GiftedChat, IMessage } from 'react-native-gifted-chat'
 import { styles } from './styles'
 import { CustomMessageProps } from './interface'
@@ -24,6 +24,11 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
   const togglePoblish = () => setIsPoblish((prev) => !prev)
   const toggleTip = () => setIsTip((prev) => !prev)
   const toggleBlur = () => setIsBlur((prev) => !prev)
+
+
+  const openAnalyseModal = () => {
+    console.log(33)
+  }
 
   return (
     <View style={styles.bubble}>
@@ -61,7 +66,9 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
             <View className='my-5 overflow-hidden'>
               <DottedLine></DottedLine>
             </View>
-            <View>555555</View>
+            <View>
+              <Text>555555</Text>
+            </View>
           </View>
         )}
 
@@ -79,6 +86,41 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
           </View>
         )}
       </View>
+      {
+        !currentMessage.system && (
+          <View className='flex-row justify-end'>
+            <View className='flex-row items-center gap-2 border border-gray-200 rounded-full py-1 px-4 mt-[-10px]'>
+              <View>
+                <View className='flex-row gap-1 items-center'>
+                  <Text className='text-lime-500 text-sm'>语法正确</Text>
+                  <Check color={"#84cc16"} size={15} />
+                </View>
+                <Text className='text-gray-400 text-xs'>太棒了</Text>
+              </View>
+              <View className='w-[1px] h-4 bg-gray-200'></View>
+              <View>
+                <View className='flex-row gap-1 items-center'>
+                  <Text className='text-lime-500 text-sm'>发音62</Text>
+                </View>
+                <View className='flex-row'>
+                  <Text className='text-gray-400 text-xs'>优化发音</Text>
+                  <ChevronRight color={"#9ca3af"} size={15} />
+                </View>
+              </View>
+              <View className='w-[1px] h-4 bg-gray-200'></View>
+              <Pressable onPress={openAnalyseModal}>
+                <View className='flex-row gap-1 items-center'>
+                  <Text className='text-lime-500 text-sm'>地道s62</Text>
+                </View>
+                <View className='flex-row'>
+                  <Text className='text-gray-400 text-xs'>优化表达</Text>
+                  <ChevronRight color={"#9ca3af"} size={15} />
+                </View>
+              </Pressable>
+            </View>
+          </View>
+        )
+      }
     </View >
   )
 }
