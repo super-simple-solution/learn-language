@@ -36,3 +36,22 @@ export const chatList:IMessage[] = [{
   },
   user: { _id: 1, name: 'System' },
 }]
+
+
+
+export const tipList =  [{
+  text: '待提高',
+  color: '#ef4444'
+}, {
+  text: '小瑕疵',
+  color: '#f97316'
+}, {
+  text: '很完美',
+  color: '#000',
+}, {
+  text: '连读',
+  color: '#22c55e',
+}, {
+  text: '重读词',
+  color: '#22c55e'
+}]

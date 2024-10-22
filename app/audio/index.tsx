@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native'
-import { Languages, Star, Volume2, AudioLines, Play, GraduationCap, Lightbulb, MessageSquareDiff, Loader, SparkleIcon, ChevronDown, ChevronUp, Eye, Check, ChevronRight } from 'lucide-react-native'
+import { View, Text, TouchableOpacity, Pressable, Modal } from 'react-native'
+import { Languages, Star, Volume2, AudioLines, Play, GraduationCap, Lightbulb, MessageSquareDiff, Loader, SparkleIcon, ChevronDown, ChevronUp, Eye, Check, ChevronRight, X } from 'lucide-react-native'
 import { GiftedChat, IMessage } from 'react-native-gifted-chat'
 import { styles } from './styles'
 import { CustomMessageProps } from './interface'
 import { chatList } from './const'
 import { DottedLine } from './dottedLine'
 import { EyeClosed } from 'phosphor-react-native'
+import OptimizationModalContent from './optimizationModalContent'
 
 const ActionButton = ({ icon: Icon }: { icon: any }) => (
   <TouchableOpacity>
@@ -24,11 +25,7 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
   const togglePoblish = () => setIsPoblish((prev) => !prev)
   const toggleTip = () => setIsTip((prev) => !prev)
   const toggleBlur = () => setIsBlur((prev) => !prev)
-
-
-  const openAnalyseModal = () => {
-    console.log(33)
-  }
+  const [modalVisible, setModalVisible] = useState(false)
 
   return (
     <View style={styles.bubble}>
@@ -108,7 +105,7 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
                 </View>
               </View>
               <View className='w-[1px] h-4 bg-gray-200'></View>
-              <Pressable onPress={openAnalyseModal}>
+              <Pressable onPress={() => setModalVisible(true)}>
                 <View className='flex-row gap-1 items-center'>
                   <Text className='text-lime-500 text-sm'>地道s62</Text>
                 </View>
@@ -121,6 +118,14 @@ const CustomMessage: React.FC<CustomMessageProps> = ({ currentMessage }) => {
           </View>
         )
       }
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        presentationStyle="overFullScreen"
+        onRequestClose={() => setModalVisible(!modalVisible)}>
+        <OptimizationModalContent setModalVisible={setModalVisible}></OptimizationModalContent>
+      </Modal>
     </View >
   )
 }
